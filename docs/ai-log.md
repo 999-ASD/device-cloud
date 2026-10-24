@@ -1,50 +1,108 @@
-# AI 协作日志（第 1 周）
+# AI 协作日志 · 第 2 周（需求工程）
 
-> 任务四：记录 prompt、AI 产出与人工审查。至少修正 1 处 AI 错误或幻觉。
+> 记录格式：时间 / 阶段 / prompt 原文 / AI 产出摘要 / 我的裁剪与理由（采纳·修改·驳回）
 
-## 日志条目 1
+## 记录 1
+- 时间：2026-10-24
+- 阶段：需求获取（访谈问题清单）
+- prompt：
+  ```text
+  背景：项目「设备云监」，工业设备监控与运维管理系统；纯软件模拟（Modbus TCP 从站，
+  端口 5020），单机运行，全开源免费。目标用户是：工厂设备管理员、运维工程师、班组长。
+  核心业务数据表只有：device / telemetry / alarm / work_order / spare_part / spare_record。
+  任务：为「与设备管理员访谈」生成问题清单，用于获取需求。
+  约束：
+  1. 只围绕上面 6 张表和真实工业运维场景提问，不引入权限体系、多租户、移动 App、云平台选型等话题。
+  2. 问题要能被回答者用「是/否/数值/具体流程」回答，避免「你觉得系统好用吗」这类主观问题。
+  3. 按主题分组（设备台账 / 实时监控 / 报警 / 工单 / 备件 / 报表），每组 3 条以内。
+  4. 每条问题后用括号注明「想拿到什么信息」。
+  要求：先列出你不确定的 3 个点让我确认，再给问题清单（总数不超过 20 条）。
+  ```
+- AI 产出摘要：按 6 组给出约 18 条问题，并列出 3 个不确定点；初稿中夹杂权限登录、手机 App、邮件审批、上云多工厂等超范围题，以及一条主观题；对断线、×10 还原、去重、越界、关单等边界覆盖不足。原始对照稿：`docs/interview_questions.ai-draft.md`。
+- 我的裁剪与理由：
+  - **驳回**：权限/登录改台账、App 推送、多级审批+邮件、上云多工厂看板、主观「好用吗」——均超出 v1 或无法落表。
+  - **修改**：每条括号统一对齐 01 字段（device.* / telemetry.* / alarm.* / work_order.* / spare_*）。
+  - **补充**：断线重连、温度 ×10 还原、报警去重、越界值处理、工单关闭条件与关单后再建单规则。
+  - **终稿**：`docs/interview_questions.md`（6 组、18 条、含「被裁剪」清单）。
 
-| 项 | 内容 |
-|----|------|
-| 日期 | 2026-10-13 |
-| 工具 | Ollama `qwen2.5-coder:7b`（HTTP `/api/generate`；亦可在 VS Code Continue 中复现） |
-| Prompt 原文 | 见下方「三段式提示词」 |
-| AI 产出摘要 | 生成了含简介/功能/技术栈/目录/快速开始/环境/FAQ/许可证的 Markdown 初稿；结构完整，但目录与命令多处与真实仓库不符，且未写明 `pymodbus==3.6.9`。原始稿保存在 `docs/README.ai-draft.md`。 |
-| 采纳 / 驳回 | **采纳**：项目定位、端口 5020/8000/5173、Python 3.11+ / Node 20+、Vue3+Vite+Element Plus、Docker Compose 方向。**驳回/重写**：虚构目录与文件、根目录 `npm install`、错误 clone 地址、不存在的日志路径、完整 MIT 正文与不存在的 LICENSE、夸大已完成功能。 |
-| 幻觉修正示例 | ① AI 把后端写成 `backend/main.py`，并把 `simulator/main.py`、`docs/index.md` 等写进树中 → **改为**实际骨架 `backend/app/main.py`、`simulator/device_server.py`，并补充 `tools/`、`week01-evidence/`。② AI 写 `npm install` 在仓库根目录执行 → **改为** `cd frontend` 后再 `npm install`。③ AI 声称存在 `LICENSE` 与 `backend/logs/app.log` → **删除/更正**，并注明第 1 周状态与真实仓库 URL。 |
+## 记录 2
+- 时间：2026-10-24
+- 阶段：用户故事
+- prompt：
+  ```text
+  【背景】项目「设备云监」，工业设备监控与运维管理系统。
+  技术栈 Python3.11 + FastAPI + SQLite + pymodbus；Modbus TCP 端口 5020。
+  核心表：device/telemetry/alarm/work_order/spare_part/spare_record。
+  Modbus 点位：温度 HR40001(×10)、转速 HR40002、产量 HR40003、状态 HR40004、安全门 DI10001。
+  【任务】为以下 3 个模块各生成 3 条用户故事，共 9 条：
+  (1) 实时监控 (2) 报警管理 (3) 巡检/报修工单。
+  每条格式：作为 <角色>，我想要 <功能>，以便 <价值>。
+  （角色仅限：设备管理员 / 运维工程师 / 班组长）
+  【约束】不引入权限体系、多角色审批、邮件/短信/微信通知、移动 App；
+  字段只用 6 张表已有列名 snake_case；每条标注 MoSCoW、涉及表与字段；
+  先列不确定点再给故事。
+  ```
+- AI 产出摘要：按三模块生成故事，但夹杂 App 推送、severity_score、多级审批/operator_id、notify_channel 等超范围或幻觉字段；边界（断线、×10、去重、关后不再报）覆盖不足。对照稿：`docs/user_stories.ai-draft.md`。
+- 我的裁剪与理由：
+  - **驳回**：App/微信通知、severity_score、审批流与 operator_id（详见终稿「人工裁剪记录」）。
+  - **采纳并改写**：监控刷新、温度报警、一键建单、关单等 Must 故事，字段对齐 01。
+  - **补充**：断线重连、×10 还原、报警去重、清除后不再重复报警；备件 Should、简报 Could；明确 Won't。
+  - **终稿**：`docs/user_stories.md`（核心模块 ≥9 条 + MoSCoW + Won't + 裁剪记录 ≥2）。
 
-### 三段式提示词（原文）
+## 记录 3
+- 时间：2026-10-24
+- 阶段：验收标准（Given/When/Then）
+- prompt：
+  ```text
+  【背景】项目「设备云监」，Modbus TCP 端口 5020，温度 HR40001 按 ×10 存储，
+  报警表 alarm 字段：type/level/message/ts/acked/cleared_at；
+  工单表 work_order 字段：status/assignee/closed_at。
+  【任务】把 3 条用户故事改写成 Given/When/Then：
+  故事1：温度 ≥ 60℃ 时自动生成 high 级报警并推送到监控页。
+  故事2：按设备编号搜索台账。
+  故事3：报修工单处理完成后可关闭。
+  【约束】每条 Given/When/Then，Then 可观察可量化（含时间如 ≤2 秒）；
+  不用「如果/大概/尽快」；字段只用已给列名；先列 3 个不确定点再给答案。
+  ```
+- AI 产出摘要：能分出 3 条 AC，但出现「尽快/良好/有点高」等不可测表述，以及 `operator_id`、站外通知等幻觉/超范围。对照稿：`docs/acceptance_criteria.ai-draft.md`。
+- 我的裁剪与理由：
+  - **驳回**：模糊词与站外通知、`operator_id`。
+  - **改写**：量化为 ≤2s/≤3s；明确 `level="high"`、`acked`、`status="已关闭"`、`closed_at`。
+  - **补边界**：≥60℃（含等于）、60 秒报警去重、温度 ×10 还原后再比较、关单须 content 非空。
+  - **终稿**：`docs/acceptance_criteria.md`（AC-1～AC-3）。
 
-```text
-背景：Web 项目「工业设备监控与运维」，项目名「设备云监」。
-技术栈：Python 3.11+ + FastAPI + SQLite；Modbus TCP 采集（端口 5020）；
-前端 Vue3 + Vite + Element Plus；Docker Compose 部署；Git；全开源。
-任务：写 README.md 初稿。
-约束：Markdown；章节含：项目简介、功能特性、技术栈、目录结构、
-快速开始、环境要求、常见问题、许可证。
-目录结构必须与下列一致：
-device-cloud/
-  backend/
-  simulator/
-  frontend/
-  docs/
-  docker-compose.yml
-  README.md
-请写明 Python 3.11+、Node 20+、pymodbus、端口 5020/8000/5173。
-```
+## 记录 4
+- 时间：2026-10-24
+- 阶段：用例图 / PRD
+- prompt：
+  ```text
+  （用例图）参与者仅 3 个；6 主用例；监控/报警 include 采集 Modbus；Mermaid flowchart。
+  （PRD）章节固定 1～10：背景与目标 / 用户角色 / 功能 P0-P2 / 非功能 /
+  数据需求 / Modbus / 界面清单 / Out of Scope / 验收汇总 / 里程碑与风险。
+  字段只用 01；Out of Scope 必须含真实硬件、多租户、权限体系、移动 App；
+  非功能带可测指标；先大纲再正文，不编造依赖。
+  ```
+- AI 产出摘要：
+  - 用例图：易加超范围角色、漏 include（见 `use_case.ai-draft.md`）。
+  - PRD：若全权交给 AI 重写，易跑偏字段/范围；本任务以任务一～四人工终稿汇总为主。
+- 我的裁剪与理由：
+  - **用例图**：删系统管理员/访客；补 include；用例名改为用户目标 → `docs/use_case.md`。
+  - **PRD**：按 10 章骨架填入已审查的故事/AC/点位/Out of Scope；NFR 带 ≤2s/≤3s/≤10s；禁止幻觉字段 → `docs/PRD.md`。
+  - **对齐**：温度阈值写 **≥60℃**（与 AC-1 / 用户故事一致）；页面清单 Dashboard/Devices/Alarms/WorkOrders/Spares/Stats。
 
-### 人工审查核对清单
-
-1. [x] 技术版本：Python 3.11+、Node 20+、**pymodbus==3.6.9**、端口 5020  
-2. [x] 目录结构与仓库一致（对照 `tree` / 资源管理器）  
-3. [x] 「快速开始」命令可执行、路径正确  
-4. [x] 删除不存在依赖、假日志、假 LICENSE  
-5. [x] 补充「项目状态：第 1 周 / 环境已就绪」与仓库地址 `https://github.com/999-ASD/device-cloud`
-
-### 结论
-
-任务四要求「AI 出初稿 + 人工至少修 1 处幻觉」已满足；对照文件：
-
-- AI 原稿：`docs/README.ai-draft.md`
-- 修订后：`README.md`
-- 本日志：`docs/ai-log.md`
+## 记录 5（任务六 · 需求评审）
+- 时间：2026-10-24
+- 阶段：需求评审与自检
+- prompt：
+  ```text
+  请指出我这份 PRD 里：1) 最可能被用户否定的 3 条需求；
+  2) 与数据表 device/alarm/work_order 对不上的字段；
+  3) 超出「纯软件模拟、单机、无权限」范围的 3 处。
+  只给清单和理由，不要重写全文。
+  ```
+- AI 产出摘要：挑刺集中在固定 60℃、去重窗口、无权限审计；未发现终稿残留幻觉字段。详见 `docs/review_checklist.md`「AI 唱反调」表。
+- 我的裁剪与理由：
+  - **采纳为风险说明**：阈值/去重可配置化留后续，不在本周扩表。
+  - **驳回扩范围**：不因此引入权限或站外通知。
+  - **回改文档**：PRD §3 台账补充「按 code 搜索（见 AC-2）」，与 AC-2 对齐。
+  - **自检结论**：`review_checklist.md` 10 项均已判定通过。
