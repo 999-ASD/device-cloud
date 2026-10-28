@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>设备云监 · 设备台账（线框）</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      margin: 0;
+      background: #f5f6f8;
+      color: #2c3e50;
+    }
+    header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header .sub { opacity: 0.85; font-size: 13px; margin-left: 8px; }
+    .wrap { padding: 16px 20px 28px; max-width: 1100px; margin: 0 auto; }
+    .hint {
+      background: #fff8e6;
+      border: 1px solid #f0d78c;
+      color: #7a5b00;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .toolbar button {
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .toolbar button.active {
+      background: #2c3e50;
+      color: #fff;
+      border-color: #2c3e50;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 14px;
+      display: none;
+    }
+    .panel.show { display: block; }
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      color: #555;
+      font-weight: 600;
+    }
+    .bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .bar input {
+      flex: 1;
+      min-width: 200px;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 4px;
+      border: 1px solid #2c3e50;
+      background: #2c3e50;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn.ghost {
+      background: #fff;
+      color: #2c3e50;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid #eee;
+      padding: 10px 8px;
+      text-align: left;
+    }
+    th {
+      background: #fafafa;
+      color: #666;
+      font-weight: 600;
+    }
+    .ops a {
+      color: #2980b9;
+      text-decoration: none;
+      margin-right: 10px;
+      font-size: 13px;
+    }
+    .pager {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      color: #666;
+      font-size: 13px;
+    }
+    .pager span.box {
+      border: 1px solid #ddd;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+    .empty, .loading, .error {
+      text-align: center;
+      padding: 48px 16px;
+      color: #888;
+    }
+    .empty strong { color: #2c3e50; }
+    .loading .skel {
+      height: 14px;
+      background: linear-gradient(90deg, #eee, #f7f7f7, #eee);
+      background-size: 200% 100%;
+      border-radius: 4px;
+      margin: 10px auto;
+      max-width: 520px;
+    }
+    .error {
+      color: #c0392b;
+      border: 1px dashed #e74c3c;
+      border-radius: 6px;
+      background: #fdf2f1;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      background: #eaf7ea;
+      color: #1e7a1e;
+    }
+    .tag.warn { background: #fff4e5; color: #a65c00; }
+    .tag.off { background: #f0f0f0; color: #666; }
+    footer {
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      padding: 8px 0 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div><b>设备云监</b><span class="sub">设备台账页线框 · 对齐 device 表（code/name/model/location/status）</span></div>
+    <div style="font-size:12px;opacity:.8">纯 HTML · 无外链</div>
+  </header>
+
+  <div class="wrap">
+    <div class="hint">
+      第 3 周任务三：同一页用按钮切换三种状态（空数据 / 加载中 / 错误）。列名对应 DDL：编号=code，状态=status。
+      双击本文件即可在浏览器打开。
+    </div>
+
+    <div class="toolbar" id="stateBar">
+      <button type="button" class="active" data-state="data">有数据（正常）</button>
+      <button type="button" data-state="empty">空数据态</button>
+      <button type="button" data-state="loading">加载态</button>
+      <button type="button" data-state="error">错误态</button>
+    </div>
+
+    <!-- 状态一：有数据（便于对照表格结构） -->
+    <section class="panel show" id="state-data">
+      <h2>状态预览 · 有数据</h2>
+      <div class="bar">
+        <input type="text" placeholder="按设备编号 code 搜索，如 EQ-001" />
+        <button type="button" class="btn ghost">搜索</button>
+        <button type="button" class="btn">+ 新增设备</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>编号 (code)</th>
+            <th>名称 (name)</th>
+            <th>型号 (model)</th>
+            <th>位置 (location)</th>
+            <th>状态 (status)</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>EQ-001</td>
+            <td>1号注塑机</td>
+            <td>X-200</td>
+            <td>A车间</td>
+            <td><span class="tag">running</span></td>
+            <td class="ops"><a href="#">编辑</a><a href="#">删除</a></td>
+          </tr>
+          <tr>
+            <td>EQ-002</td>
+            <td>2号注塑机</td>
+            <td>X-200</td>
+            <td>B车间</td>
+            <td><span class="tag warn">idle</span></td>
+            <td class="ops"><a href="#">编辑</a><a href="#">删除</a></td>
+          </tr>
+          <tr>
+            <td>EQ-003</td>
+            <td>空压机组</td>
+            <td>AC-50</td>
+            <td>动力站</td>
+            <td><span class="tag off">stopped</span></td>
+            <td class="ops"><a href="#">编辑</a><a href="#">删除</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pager">
+        <span>共 3 条</span>
+        <span class="box">上一页</span>
+        <span class="box">1</span>
+        <span class="box">下一页</span>
+        <span>size=20（假分页）</span>
+      </div>
+    </section>
+
+    <!-- 状态二：空数据 -->
+    <section class="panel" id="state-empty">
+      <h2>状态预览 · 空数据</h2>
+      <div class="bar">
+        <input type="text" placeholder="按设备编号 code 搜索" />
+        <button type="button" class="btn ghost">搜索</button>
+        <button type="button" class="btn">+ 新增设备</button>
+      </div>
+      <div class="empty">
+        <div style="font-size:42px;line-height:1;margin-bottom:8px;">▭</div>
+        <strong>暂无设备，点击新增</strong>
+        <div style="margin-top:8px;font-size:13px;">对应接口 GET /api/devices 返回 total=0</div>
+      </div>
+      <div class="pager">
+        <span>共 0 条</span>
+        <span class="box">上一页</span>
+        <span class="box">1</span>
+        <span class="box">下一页</span>
+      </div>
+    </section>
+
+    <!-- 状态三：加载中 -->
+    <section class="panel" id="state-loading">
+      <h2>状态预览 · 加载中</h2>
+      <div class="bar">
+        <input type="text" placeholder="按设备编号 code 搜索" disabled />
+        <button type="button" class="btn ghost" disabled>搜索</button>
+        <button type="button" class="btn" disabled>+ 新增设备</button>
+      </div>
+      <div class="loading">
+        <div>加载中…</div>
+        <div class="skel" style="width:90%;height:18px;margin-top:18px;"></div>
+        <div class="skel" style="width:85%;"></div>
+        <div class="skel" style="width:88%;"></div>
+        <div class="skel" style="width:70%;"></div>
+        <div style="margin-top:12px;font-size:13px;">骨架屏占位 · 等待 GET /api/devices</div>
+      </div>
+    </section>
+
+    <!-- 状态四：错误 -->
+    <section class="panel" id="state-error">
+      <h2>状态预览 · 错误</h2>
+      <div class="bar">
+        <input type="text" placeholder="按设备编号 code 搜索" />
+        <button type="button" class="btn ghost">搜索</button>
+        <button type="button" class="btn">+ 新增设备</button>
+      </div>
+      <div class="error">
+        <div style="font-size:18px;font-weight:700;margin-bottom:8px;">无法加载设备列表</div>
+        <div>后端未启动，请检查 8000 端口</div>
+        <div style="margin-top:10px;font-size:13px;color:#922;">
+          不是笼统的「请求失败」——应对齐开发地址 http://127.0.0.1:8000
+        </div>
+        <button type="button" class="btn" style="margin-top:14px;background:#c0392b;border-color:#c0392b;">重试</button>
+      </div>
+    </section>
+  </div>
+
+  <footer>docs/prototype.html · 第 3 周任务三 · 由教材 3.5 监控看板骨架改造为设备台账页</footer>
+
+  <script>
+    (function () {
+      var bar = document.getElementById("stateBar");
+      var panels = {
+        data: document.getElementById("state-data"),
+        empty: document.getElementById("state-empty"),
+        loading: document.getElementById("state-loading"),
+        error: document.getElementById("state-error")
+      };
+      function show(name) {
+        Object.keys(panels).forEach(function (k) {
+          panels[k].classList.toggle("show", k === name);
+        });
+        Array.prototype.forEach.call(bar.querySelectorAll("button"), function (btn) {
+          btn.classList.toggle("active", btn.getAttribute("data-state") === name);
+        });
+      }
+      bar.addEventListener("click", function (e) {
+        var btn = e.target.closest("button[data-state]");
+        if (!btn) return;
+        show(btn.getAttribute("data-state"));
+      });
+      // 支持 ?state=empty|loading|error|data 便于截图
+      var q = new URLSearchParams(location.search).get("state");
+      if (q && panels[q]) show(q);
+    })();
+  </script>
+</body>
+</html>
